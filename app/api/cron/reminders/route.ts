@@ -4,8 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { sendReminderEmail, sendRecommendationsEmail } from '@/lib/email'
 
 export async function GET(request: Request) {
+  const secret = process.env.CRON_SECRET
+  if (!secret) {
+    console.error('[/api/cron/reminders] CRON_SECRET not configured')
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+  }
   const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -30,18 +35,26 @@ export async function GET(request: Request) {
 
   await Promise.all([
     ...reminderAppts.map(async (appt) => {
-      await sendReminderEmail(appt)
-      await prisma.appointment.update({
-        where: { id: appt.id },
-        data: { reminderSent: true },
-      })
+      try {
+        await sendReminderEmail(appt)
+        await prisma.appointment.update({
+          where: { id: appt.id },
+          data: { reminderSent: true },
+        })
+      } catch (err) {
+        console.error(`[/api/cron/reminders] Failed to process reminder for ${appt.id}:`, err)
+      }
     }),
     ...recommendationAppts.map(async (appt) => {
-      await sendRecommendationsEmail(appt)
-      await prisma.appointment.update({
-        where: { id: appt.id },
-        data: { recommendationSent: true },
-      })
+      try {
+        await sendRecommendationsEmail(appt)
+        await prisma.appointment.update({
+          where: { id: appt.id },
+          data: { recommendationSent: true },
+        })
+      } catch (err) {
+        console.error(`[/api/cron/reminders] Failed to process recommendation for ${appt.id}:`, err)
+      }
     }),
   ])
 

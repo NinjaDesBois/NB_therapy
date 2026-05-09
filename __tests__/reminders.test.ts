@@ -97,4 +97,31 @@ describe('GET /api/cron/reminders', () => {
     expect(data.reminders).toBe(1)
     expect(data.recommendations).toBe(1)
   })
+
+  it('returns 500 when CRON_SECRET is not set', async () => {
+    const original = process.env.CRON_SECRET
+    delete process.env.CRON_SECRET
+    const res = await GET(makeRequest())
+    expect(res.status).toBe(500)
+    process.env.CRON_SECRET = original
+  })
+
+  it('continues processing when one email fails', async () => {
+    const appt2 = { ...mockAppt, id: 'appt-2' }
+    mockFindMany
+      .mockResolvedValueOnce([mockAppt, appt2])
+      .mockResolvedValueOnce([])
+
+    ;(emailLib.sendReminderEmail as jest.Mock)
+      .mockRejectedValueOnce(new Error('email error')) // appt-1 fails
+      .mockResolvedValueOnce({})                        // appt-2 succeeds
+
+    await GET(makeRequest(CRON_SECRET))
+
+    // appt-2 should still be updated even though appt-1 failed
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'appt-2' },
+      data: { reminderSent: true },
+    })
+  })
 })
