@@ -17,6 +17,18 @@ export async function POST(
 
     const appointment = await prisma.appointment.findUnique({
       where: { token: params.token },
+      select: {
+        questionnaireCompleted: true,
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        service: true,
+        date: true,
+        token: true,
+        message: true,
+      },
     })
 
     if (!appointment) {
@@ -38,7 +50,9 @@ export async function POST(
       },
     })
 
-    await sendQuestionnaireSummary(appointment, parsed.data)
+    sendQuestionnaireSummary(appointment, parsed.data).catch((err) => {
+      console.error('[/api/questionnaire] Failed to send summary email:', err)
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
