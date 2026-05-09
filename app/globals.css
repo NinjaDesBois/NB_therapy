@@ -8,8 +8,7 @@
   }
 
   body {
-    @apply bg-cream text-text font-body;
-    -webkit-font-smoothing: antialiased;
+    @apply bg-cream text-text font-body antialiased;
   }
 
   h1, h2, h3, h4 {
