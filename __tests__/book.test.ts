@@ -56,6 +56,14 @@ describe('POST /api/book', () => {
     const data = await res.json()
     expect(data.success).toBe(true)
     expect(mockCreate).toHaveBeenCalledTimes(1)
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        firstName: 'Amira',
+        lastName: 'Benali',
+        email: 'amira@example.com',
+        status: 'PENDING',
+      }),
+    })
   })
 
   it('sends confirmation, practitioner, and questionnaire emails', async () => {
@@ -63,6 +71,15 @@ describe('POST /api/book', () => {
     expect(emailLib.sendConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(emailLib.sendPractitionerNotification).toHaveBeenCalledTimes(1)
     expect(emailLib.sendQuestionnaireEmail).toHaveBeenCalledTimes(1)
+    expect(emailLib.sendConfirmationEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ token: 'test-token' })
+    )
+  })
+
+  it('returns 500 if email dispatch fails', async () => {
+    ;(emailLib.sendConfirmationEmail as jest.Mock).mockRejectedValueOnce(new Error('Email service down'))
+    const res = await POST(makeRequest(validBody))
+    expect(res.status).toBe(500)
   })
 
   it('returns 400 for invalid body', async () => {

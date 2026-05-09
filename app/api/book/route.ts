@@ -37,6 +37,10 @@ export async function POST(request: Request) {
       },
     })
 
+    if (!appointment.token) {
+      throw new Error('Failed to generate appointment token')
+    }
+
     await Promise.all([
       sendConfirmationEmail(appointment),
       sendPractitionerNotification(appointment),
