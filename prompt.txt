@@ -1,0 +1,160 @@
+You are building a complete, production-ready website for "NB Therapy", a Belgian female wellness practitioner offering Hijama, massage, Ruqya Nuranya, and therapeutic listening sessions. The site targets French-speaking Belgian women.
+
+## DESIGN DIRECTION
+Base the design on this approved template direction: soft pastel feminine aesthetic, light backgrounds, elegant serif typography (Cormorant Garamond for headings, Jost for body), rose/lavender/sage color palette. NO emojis anywhere — replace all icons with clean SVG illustrations or geometric ornamental shapes. Elevate the design quality significantly: think high-end French wellness brand (think Aesop, Sisley, or Clarins level of refinement). Use subtle CSS animations, generous whitespace, fine decorative lines, and layered depth with soft shadows.
+
+## TECH STACK
+- Next.js 14 (App Router)
+- Tailwind CSS (custom palette, no default colors)
+- Framer Motion for animations
+- Resend or Nodemailer for transactional emails
+- Prisma + SQLite (or PostgreSQL) for appointment storage
+- react-hook-form + zod for form validation
+- date-fns for date/time handling
+- Vercel-ready deployment config
+
+## COLOR TOKENS (define in tailwind.config.js)
+- rose: #f2c4ce, rose-deep: #e8a0b0
+- lavender: #d4b8e0, lavender-deep: #9b7fd4
+- sage: #c8d8c0, sage-deep: #7faa75
+- cream: #fdf6f0, cream-dark: #f5ede4
+- text: #4a3540, text-light: #9a7a85
+- gold: #c9a96e
+
+## TYPOGRAPHY
+- Display font: Cormorant Garamond (weights 300, 400, 600 italic)
+- Body font: Jost (weights 300, 400, 500)
+- Import from Google Fonts
+
+## PAGES & SECTIONS
+
+### 1. `/` — Homepage
+**Hero section:**
+- Two-column layout (text left, animated floating card right)
+- Headline: "Prenez soin de vous, naturellement"
+- Subline: "Entre stress, fatigue et rythme effréné… votre corps a besoin d'attention."
+- CTA button: "Prendre rendez-vous" → scrolls to booking form
+- Floating card on the right showing the 4 services with hover state
+
+**Services section (4 cards):**
+1. **Hijama** — "Technique ancestrale de ventouses pour purifier le sang, soulager les douleurs et rééquilibrer le corps en profondeur." Tag: Réservé aux femmes
+2. **Massage bien-être** — "Soin doux et enveloppant pour détendre les muscles, libérer les tensions et retrouver légèreté et sérénité."
+3. **Ruqya Nuranya** — "Ruqya Nuranya Moubaraka — un soin spirituel doux pour purifier l'âme, nettoyer l'esprit et retrouver l'équilibre intérieur." Tag: Sur demande
+4. **Accompagnement thérapeutique** — "Un espace d'écoute bienveillant pour les personnes qui souhaitent parler, être écoutées et accompagnées dans leurs difficultés." Tag: Nouveau
+
+**Quote section:**
+Centered italic quote in Cormorant Garamond: "Parce que vous méritez de vous sentir bien, de l'intérieur comme à l'extérieur."
+
+**Booking section (`#reserver`):**
+Full booking form with the following fields:
+- Prénom & Nom (required)
+- Téléphone WhatsApp (required, Belgian format validation)
+- Email (required)
+- Service choisi (select: Hijama / Massage bien-être / Ruqya Nuranya / Accompagnement thérapeutique)
+- Date souhaitée (date picker, no past dates, no Sundays)
+- Heure souhaitée (time picker: slots 9h00–19h00, every 30 min)
+- Message libre (optional textarea)
+- Checkbox: "J'accepte de recevoir un questionnaire médical par email avant ma séance" (required)
+On submit: show elegant success message with next steps explanation
+
+**Contact section:**
+Three contact cards: WhatsApp (0496/93 42 34), Email (nbtherapy07@gmail.com), Instagram (_nb.therapy_) — SVG icons only, no emojis
+
+### 2. `/api/book` — POST endpoint
+On form submission:
+1. Save appointment to database (status: PENDING)
+2. Send confirmation email to client (HTML template, branded rose/cream design):
+   - Subject: "Votre demande de rendez-vous — NB Therapy"
+   - Body: confirm name, service, date/time, next steps
+3. Send medical questionnaire email to client (send 5 minutes after booking, or immediately):
+   - Subject: "Questionnaire médical — NB Therapy"
+   - Fields to fill: pathologies existantes, médicaments en cours, allergies connues, grossesse en cours (oui/non), contre-indications connues, informations complémentaires
+   - Design: clean HTML form-style email with a link to a hosted form page OR inline questions with a reply instruction
+4. Send pre-session recommendations email (send 24h before appointment via cron job):
+   - Subject: "Recommandations avant votre séance — NB Therapy"
+   - Content: drink water, avoid heavy meals 2h before, wear comfortable clothing, arrive 5 min early, bring any relevant medical documents
+5. Send reminder email 48h before appointment:
+   - Subject: "Rappel de votre rendez-vous — NB Therapy"
+   - Body: remind date, time, service, WhatsApp contact for changes
+
+### 3. `/api/cron/reminders` — GET endpoint (Vercel Cron)
+- Runs daily at 9h00
+- Queries all appointments scheduled 48h from now (status: CONFIRMED)
+- Sends reminder emails
+- Queries all appointments scheduled 24h from now
+- Sends pre-session recommendation emails
+- Configure in vercel.json: `{ "crons": [{ "path": "/api/cron/reminders", "schedule": "0 9 * * *" }] }`
+
+### 4. `/questionnaire/[token]` — Optional hosted questionnaire page
+- Unique token per appointment (stored in DB)
+- Simple form collecting medical info
+- On submit: save to DB, send summary to practitioner email (nbtherapy07@gmail.com)
+- Elegant design matching site aesthetic
+
+## EMAIL TEMPLATES
+All emails must be:
+- HTML emails with inline CSS (email-compatible)
+- Rose/cream branded header with "NB Therapy" logotype
+- Cormorant Garamond or Georgia fallback for headings
+- Clean, feminine, professional tone in French
+- Footer: NB Therapy · Belgique · nbtherapy07@gmail.com
+
+## DATABASE SCHEMA (Prisma)
+```prisma
+model Appointment {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  phone       String
+  email       String
+  service     String
+  date        DateTime
+  message     String?
+  status      String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED
+  token       String   @unique @default(cuid())
+  questionnaireCompleted Boolean @default(false)
+  reminderSent Boolean @default(false)
+  recommendationSent Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+```
+
+## ANIMATIONS
+- Hero: staggered fade-up on load (Framer Motion)
+- Service cards: hover lift with soft shadow transition
+- Floating card: gentle vertical float loop (CSS keyframes)
+- Form: smooth field focus transitions
+- Success state: fade-in with checkmark SVG animation
+
+## IMPORTANT CONSTRAINTS
+- Zero emojis anywhere in the UI — use SVG icons or Unicode ornamental characters (✦ · —) only
+- Mobile-first responsive design
+- All French copy, no English visible to end users
+- Form must work without JavaScript as graceful degradation
+- All emails sent server-side only, never expose API keys to client
+- GDPR-compliant: include privacy notice on booking form
+- Practitioner notification email on every new booking to nbtherapy07@gmail.com
+
+## PROJECT STRUCTURE
+nb-therapy/
+├── app/
+│   ├── page.tsx                    # Homepage
+│   ├── questionnaire/[token]/      # Medical questionnaire page
+│   └── api/
+│       ├── book/route.ts           # Booking endpoint
+│       └── cron/reminders/route.ts # Daily cron job
+├── components/
+│   ├── Hero.tsx
+│   ├── Services.tsx
+│   ├── BookingForm.tsx
+│   ├── ContactSection.tsx
+│   └── emails/                     # React Email or HTML templates
+├── lib/
+│   ├── prisma.ts
+│   ├── email.ts
+│   └── validations.ts
+├── prisma/schema.prisma
+├── tailwind.config.js
+└── vercel.json
+
+Start by scaffolding the full project, then implement each section in order. Ask me nothing — make all decisions and build the complete working application.

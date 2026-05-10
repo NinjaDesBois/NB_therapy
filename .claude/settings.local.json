@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); pkgs=d.get\\('packages',{}\\); relevant=['','node_modules/next','node_modules/react','node_modules/tailwindcss','node_modules/typescript','node_modules/jest']; [print\\(k,pkgs[k].get\\('version',''\\)\\) for k in relevant if k in pkgs]\")",
+      "Bash(node -e \"const l=require\\('./package-lock.json'\\); const p=l.packages||{}; ['','node_modules/next','node_modules/react','node_modules/tailwindcss','node_modules/typescript','node_modules/jest','node_modules/framer-motion','node_modules/prisma'].forEach\\(k=>{ if\\(p[k]\\) console.log\\(k||'root', p[k].version||''\\) }\\)\")",
+      "Bash(node -e \"const l=require\\('./package-lock.json'\\); const p=l.packages||{}; const keys=['node_modules/@testing-library/react','node_modules/@testing-library/jest-dom','node_modules/@testing-library/user-event','node_modules/@prisma/client','node_modules/zod','node_modules/react-hook-form','node_modules/resend','node_modules/date-fns']; keys.forEach\\(k=>{ if\\(p[k]\\) console.log\\(k, p[k].version||''\\) }\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(npx prisma *)",
+      "Bash(npx jest *)",
+      "Bash(git rm *)",
+      "Bash(npm test *)",
+      "Bash(cat)",
+      "Bash(node /tmp/test-dates.js)",
+      "Bash(npx tsc *)",
+      "Read(//tmp/**)",
+      "Bash(npx eslint *)",
+      "Bash(npm run *)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Z-BOOK\\\\Dropbox\\\\PC\\\\Desktop\\\\Ninja\\\\NB_Therapy\\\\app\\\\api\\\\questionnaire\\\\[token]\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Z-BOOK\\\\Dropbox\\\\PC\\\\Desktop\\\\Ninja\\\\NB_Therapy\\\\app\\\\questionnaire\\\\[token]\")",
+      "Bash(git stash *)",
+      "Bash(git show *)",
+      "Bash(git diff *)",
+      "Bash(node -e \"require\\('date-fns'\\)\")"
+    ]
+  }
+}

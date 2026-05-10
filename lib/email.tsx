@@ -8,7 +8,7 @@ import RecommendationsEmail from '@/emails/recommendations'
 import QuestionnaireSummaryEmail from '@/emails/questionnaire-summary'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = 'NB Therapy <noreply@nbtherapy.be>'
+const FROM = 'NB Therapy <onboarding@resend.dev>'
 const PRACTITIONER = 'nbtherapy07@gmail.com'
 
 export interface AppointmentEmailData {
